@@ -47,3 +47,25 @@
           ((pair? lbs) (balanced lbs))
           ((pair? rbs) (balanced rbs))
           (else #t))))
+
+(define (accmulate op initial sequence)
+  (if (null? sequence)
+      initial
+      (op (car sequence)
+          (accmulate op initial (cdr sequence)))))
+
+;2.34
+(define (horner-eval x coefficient-sequence)
+  (accmulate (lambda (this-coeff higher-terms) (+ this-coeff (* x higher-terms)))
+             0
+             coefficient-sequence))
+
+;2.35
+(define (count-leaves t)
+  (accmulate 
+   +
+   0
+   (map (lambda (x) 
+          (if (pair? x)
+              (count-leaves x)
+              1)) t)))
