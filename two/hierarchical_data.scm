@@ -106,4 +106,62 @@
 (define (reverse2 sequence)
   (fold-left (lambda (x y) (cons y x)) '() sequence))
 
-(reverse (list 1 2 3 4))
+;2.40
+(define (flat-map proc seq)
+  (accmulate append '() (map proc seq)))
+
+(define (enumerate-interval a b)
+  (if (> a b)
+      '()
+      (cons a (enumerate-interval (+ a 1) b))))
+
+(define (unique-pairs n)
+  (flat-map (lambda (i) 
+              (map 
+               (lambda (j) (cons i j)) 
+               (enumerate-interval 1 (- i 1))))
+            (enumerate-interval 2 n)))
+
+;2.41
+(define (triple-unique-pairs n)
+  (flat-map 
+           (lambda (i) (flat-map (lambda (j) 
+                                   (map (lambda (z) 
+                                          (list i j z))
+                                        (enumerate-interval 1 (- j 1))))
+                                 (enumerate-interval 2 (- i 1))))
+           (enumerate-interval 3 n)))
+
+(define (ordered-triples-sum n s)
+  (filter (lambda (x) (= (+ (car x) (+ (cadr x) (caddr x))) s))
+          (triple-unique-pairs n)))
+
+;2.42
+(define (is-safe? a l i)
+  (cond ((null? l) #t)
+        ((= (car l) a) #f)
+        ((let ((k (/ (- a (car l)) i))) 
+           (or (= k 1) (= k -1))) #f)
+        (else (is-safe? a (cdr l) (+ i 1)))))
+
+(define (queens board-size) 
+  (define empty-board '())
+
+  (define (safe? k positions)
+    (is-safe? (car positions) (cdr positions) 1))
+  
+  (define (adjoin-position new-row k rest-of-queens)
+    (cons new-row rest-of-queens))
+  
+  (define (queen-cols k) 
+    (if (= k 0) 
+        (list empty-board) 
+        (filter 
+         (lambda (positions) (safe? k positions)) 
+         (flat-map 
+          (lambda (rest-of-queens) 
+            (map (lambda (new-row) 
+                   (adjoin-position new-row k rest-of-queens)) 
+                 (enumerate-interval 1 board-size))) 
+          (queen-cols (- k 1)))))) 
+  (queen-cols board-size)) 
